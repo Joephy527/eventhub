@@ -4,6 +4,7 @@ import './globals.css';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { ToasterProvider } from '@/components/providers/toaster-provider';
 import { RouteToasts } from '@/components/route-toasts';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <ToasterProvider />
-          <RouteToasts />
+          <Suspense fallback={null}>
+            <RouteToasts />
+          </Suspense>
           {children}
         </SessionProvider>
       </body>
