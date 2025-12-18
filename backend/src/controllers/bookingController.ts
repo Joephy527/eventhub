@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { bookingService } from '../services/bookingService';
 import { sendSuccess, sendCreated } from '../utils/response';
 import { AuthRequest } from '../types';
+import { retryAsync } from '../utils/resilience';
 
 export class BookingController {
   async createBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -71,7 +72,10 @@ export class BookingController {
     try {
       const userId = (req as AuthRequest).user?.id;
       const role = (req as AuthRequest).user?.role;
-      const stats = await bookingService.getBookingStats(userId!, role);
+      const stats = await retryAsync(
+        () => bookingService.getBookingStats(userId!, role),
+        { retries: 1, delayMs: 200 }
+      );
       sendSuccess(res, stats, 'Booking stats retrieved successfully');
     } catch (error) {
       next(error);

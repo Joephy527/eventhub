@@ -78,7 +78,7 @@ export const eventAPI = {
   getById: (id: string) => api.get(`/events/${id}`),
   getFeatured: (limit?: number) => api.get('/events/featured', { params: { limit } }),
   getUpcoming: (limit?: number) => api.get('/events/upcoming', { params: { limit } }),
-  getMyEvents: () => api.get('/events/my-events'),
+  getMyEvents: (params?: any) => api.get('/events/my-events', { params }),
   create: (data: any) => api.post('/events', data),
   update: (id: string, data: any) => api.put(`/events/${id}`, data),
   delete: (id: string) => api.delete(`/events/${id}`),
@@ -102,6 +102,6 @@ export const categoryAPI = {
 
 // Payments APIs
 export const paymentAPI = {
-  createIntent: (data: { eventId: string; numberOfTickets: number }) =>
+  createIntent: (data: { eventId: string; numberOfTickets: number; idempotencyKey?: string }) =>
     api.post('/payments/intent', data),
 };

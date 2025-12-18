@@ -34,15 +34,11 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-purple-600">EventHub</h1>
+              <Link href="/" className="text-2xl font-bold text-purple-600">
+                EventHub
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">
-                {session?.user.firstName} {session?.user.lastName}
-              </span>
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                {session?.user.role}
-              </span>
               {session?.user.role === "user" && (
                 <Link
                   href="/bookings"
@@ -204,6 +200,12 @@ export default async function DashboardPage() {
           <div className="rounded-lg bg-white p-6 shadow">
             <h2 className="text-xl font-bold mb-4">Account</h2>
             <div className="space-y-2">
+              <div className="flex justify-between py-2 border-b">
+                <span className="font-medium">Name:</span>
+                <span className="text-gray-600">
+                  {session?.user.firstName} {session?.user.lastName}
+                </span>
+              </div>
               <div className="flex justify-between py-2 border-b">
                 <span className="font-medium">Email:</span>
                 <span className="text-gray-600">{session?.user.email}</span>

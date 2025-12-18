@@ -1,5 +1,5 @@
-import { eventAPI } from "@/lib/api";
-import { EventCard } from "@/components/event-card";
+import { categoryAPI, eventAPI } from "@/lib/api";
+import { EventsBrowser } from "@/components/events-browser";
 import { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
@@ -18,8 +18,22 @@ async function getEvents() {
   }
 }
 
+async function getCategories() {
+  try {
+    const res = await categoryAPI.getAll();
+    return res.data.data ?? [];
+  } catch (error) {
+    console.error("Failed to load categories:", error);
+    return [];
+  }
+}
+
 export default async function EventsPage() {
-  const [events, session] = await Promise.all([getEvents(), auth()]);
+  const [events, categories, session] = await Promise.all([
+    getEvents(),
+    getCategories(),
+    auth(),
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,12 +67,21 @@ export default async function EventsPage() {
                 My bookings
               </Link>
             )}
-            <Link
-              href="/dashboard"
-              className="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100"
-            >
-              Dashboard
-            </Link>
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -73,47 +96,9 @@ export default async function EventsPage() {
           </div>
         </div>
 
-        {events.length === 0 ? (
-          <div className="mt-12 rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-gray-200">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600">
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">
-              No events available yet
-            </h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Check back soon for new experiences.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((event: any) => (
-              <EventCard
-                key={event.id}
-                id={event.id}
-                title={event.title}
-                description={event.description}
-                imageUrl={event.imageUrl}
-                location={event.location}
-                startDate={event.startDate}
-                price={event.price}
-                tags={event.tags}
-              />
-            ))}
-          </div>
-        )}
+        <div className="mt-10">
+          <EventsBrowser initialEvents={events} categories={categories} />
+        </div>
       </main>
     </div>
   );

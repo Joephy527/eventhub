@@ -29,9 +29,6 @@ export default async function MyEventsPage() {
               <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
                 Dashboard
               </Link>
-              <Link href="/events/create" className="text-purple-600 hover:text-purple-700">
-                Create Event
-              </Link>
               <span className="text-gray-700">{session?.user.firstName}</span>
             </div>
           </div>

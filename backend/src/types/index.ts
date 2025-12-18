@@ -87,4 +87,10 @@ export interface EventFilters {
   startDate?: Date;
   location?: string;
   tags?: string[];
+  minAvailableTickets?: number;
+}
+
+export interface OrganizerEventFilters {
+  search?: string;
+  status?: 'published' | 'draft';
 }

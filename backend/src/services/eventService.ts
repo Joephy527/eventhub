@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db';
 import { events } from '../db/schema';
 import { eq, and, gte, lte, ilike, or, desc, asc } from 'drizzle-orm';
-import { EventFilters } from '../types';
+import { EventFilters, OrganizerEventFilters } from '../types';
 import { AppError } from '../middleware/errorHandler';
 
 export class EventService {
@@ -30,6 +30,10 @@ export class EventService {
 
       if (filters.maxPrice !== undefined) {
         conditions.push(lte(events.price, filters.maxPrice.toString()));
+      }
+
+      if (filters.minAvailableTickets !== undefined) {
+        conditions.push(gte(events.availableTickets, filters.minAvailableTickets));
       }
 
       if (filters.location) {
@@ -134,11 +138,31 @@ export class EventService {
     await db.delete(events).where(eq(events.id, eventId));
   }
 
-  async getEventsByOrganizer(organizerId: string) {
+  async getEventsByOrganizer(organizerId: string, filters?: OrganizerEventFilters) {
+    const conditions = [eq(events.organizerId, organizerId)];
+
+    if (filters?.status === 'published') {
+      conditions.push(eq(events.isPublished, true));
+    }
+
+    if (filters?.status === 'draft') {
+      conditions.push(eq(events.isPublished, false));
+    }
+
+    if (filters?.search) {
+      conditions.push(
+        or(
+          ilike(events.title, `%${filters.search}%`),
+          ilike(events.description, `%${filters.search}%`),
+          ilike(events.location, `%${filters.search}%`)
+        )!
+      );
+    }
+
     return await db
       .select()
       .from(events)
-      .where(eq(events.organizerId, organizerId))
+      .where(and(...conditions))
       .orderBy(desc(events.createdAt));
   }
 

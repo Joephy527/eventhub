@@ -20,3 +20,9 @@ const client = postgres(connectionString, { prepare: false });
 export const db = drizzle(client, { schema });
 
 export type DbClient = typeof db;
+export type DbTransaction = Parameters<DbClient['transaction']>[0] extends (
+  tx: infer T,
+  ...args: any[]
+) => any
+  ? T
+  : never;

@@ -11,7 +11,9 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-purple-600">EventHub</h1>
+              <Link href="/" className="text-2xl font-bold text-purple-600">
+                EventHub
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
               {session ? (
@@ -19,30 +21,6 @@ export default async function HomePage() {
                   <span className="text-gray-700">
                     Welcome, {session.user.firstName}!
                   </span>
-                  {session.user.role === 'user' && (
-                    <Link
-                      href="/bookings"
-                      className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
-                    >
-                      My bookings
-                    </Link>
-                  )}
-                  {(session.user.role === 'organizer' || session.user.role === 'admin') && (
-                    <>
-                      <Link
-                        href="/events/my-events"
-                        className="rounded-lg bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100"
-                      >
-                        My Events
-                      </Link>
-                      <Link
-                        href="/events/create"
-                        className="rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700"
-                      >
-                        Create
-                      </Link>
-                    </>
-                  )}
                   <Link
                     href="/dashboard"
                     className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"

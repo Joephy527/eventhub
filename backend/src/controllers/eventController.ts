@@ -6,7 +6,7 @@ import { AuthRequest } from '../types';
 export class EventController {
   async getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { category, search, minPrice, maxPrice, location, tags } = req.query;
+      const { category, search, minPrice, maxPrice, location, tags, minAvailableTickets } = req.query;
 
       const filters = {
         category: category as string,
@@ -15,6 +15,7 @@ export class EventController {
         maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
         location: location as string,
         tags: tags ? (tags as string).split(',') : undefined,
+        minAvailableTickets: minAvailableTickets ? parseInt(minAvailableTickets as string) : undefined,
       };
 
       const events = await eventService.getAllEvents(filters);
@@ -74,7 +75,12 @@ export class EventController {
   async getMyEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as AuthRequest).user?.id;
-      const events = await eventService.getEventsByOrganizer(userId!);
+      const { search, status } = req.query;
+      const filters = {
+        search: search as string,
+        status: status === 'published' || status === 'draft' ? (status as 'published' | 'draft') : undefined,
+      };
+      const events = await eventService.getEventsByOrganizer(userId!, filters);
       sendSuccess(res, events, 'My events retrieved successfully');
     } catch (error) {
       next(error);

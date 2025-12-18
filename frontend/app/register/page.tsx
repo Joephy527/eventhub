@@ -96,6 +96,15 @@ export default function RegisterPage() {
           </p>
         </div>
 
+        <div className="flex justify-center">
+          <Link
+            href="/"
+            className="text-sm font-semibold text-purple-600 hover:text-purple-500"
+          >
+            ← Back to home
+          </Link>
+        </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-md bg-red-50 p-4">

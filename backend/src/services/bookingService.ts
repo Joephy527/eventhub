@@ -21,25 +21,9 @@ export class BookingService {
       throw new AppError('Payment is required before booking', 400);
     }
 
-    const [event] = await db
-      .select()
-      .from(events)
-      .where(eq(events.id, eventId))
-      .limit(1);
-
-    if (!event) {
-      throw new AppError('Event not found', 404);
-    }
-
-    if (event.availableTickets < numberOfTickets) {
-      throw new AppError('Not enough tickets available', 400);
-    }
-
     if (numberOfTickets <= 0) {
       throw new AppError('Number of tickets must be greater than 0', 400);
     }
-
-    const totalAmount = parseFloat(event.price) * numberOfTickets;
 
     // Verify payment intent
     const intent = await paymentService.getPaymentIntent(paymentIntentId);
@@ -48,45 +32,69 @@ export class BookingService {
     }
 
     const intentAmount = (intent.amount_received ?? intent.amount ?? 0) / 100;
-    if (Math.abs(intentAmount - totalAmount) > 0.01) {
-      throw new AppError('Payment amount mismatch', 400);
-    }
 
     if (intent.metadata?.eventId !== eventId || intent.metadata?.userId !== userId) {
       throw new AppError('Payment does not match booking details', 400);
     }
 
-    const newBooking = {
-      id: uuidv4(),
-      eventId,
-      userId,
-      numberOfTickets,
-      totalAmount: totalAmount.toString(),
-      status: 'confirmed' as const,
-      bookingDate: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const now = new Date();
 
-    const [booking] = await db.insert(bookings).values(newBooking).returning();
+    const booking = await db.transaction(async tx => {
+      const [event] = await tx
+        .select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
 
-    await db
-      .update(events)
-      .set({
-        availableTickets: event.availableTickets - numberOfTickets,
-        updatedAt: new Date(),
-      })
-      .where(eq(events.id, eventId));
+      if (!event) {
+        throw new AppError('Event not found', 404);
+      }
 
-    await paymentService.recordPayment({
-      paymentIntentId,
-      userId,
-      organizerId: event.organizerId,
-      eventId,
-      bookingId: booking.id,
-      amount: totalAmount,
-      currency: 'usd',
-      status: intent.status,
+      if (event.availableTickets < numberOfTickets) {
+        throw new AppError('Not enough tickets available', 400);
+      }
+
+      const totalAmount = parseFloat(event.price) * numberOfTickets;
+      if (Math.abs(intentAmount - totalAmount) > 0.01) {
+        throw new AppError('Payment amount mismatch', 400);
+      }
+
+      const [createdBooking] = await tx
+        .insert(bookings)
+        .values({
+          id: uuidv4(),
+          eventId,
+          userId,
+          numberOfTickets,
+          totalAmount: totalAmount.toString(),
+          status: 'confirmed' as const,
+          bookingDate: now,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning();
+
+      await tx
+        .update(events)
+        .set({
+          availableTickets: event.availableTickets - numberOfTickets,
+          updatedAt: now,
+        })
+        .where(eq(events.id, eventId));
+
+      await paymentService.recordPayment({
+        paymentIntentId,
+        userId,
+        organizerId: event.organizerId,
+        eventId,
+        bookingId: createdBooking.id,
+        amount: totalAmount,
+        currency: 'usd',
+        status: intent.status,
+        dbClient: tx,
+      });
+
+      return createdBooking;
     });
 
     return booking;
@@ -135,48 +143,54 @@ export class BookingService {
   }
 
   async cancelBooking(bookingId: string, userId: string) {
-    const [booking] = await db
-      .select()
-      .from(bookings)
-      .where(eq(bookings.id, bookingId))
-      .limit(1);
+    const now = new Date();
 
-    if (!booking) {
-      throw new AppError('Booking not found', 404);
-    }
+    const updatedBooking = await db.transaction(async tx => {
+      const [booking] = await tx
+        .select()
+        .from(bookings)
+        .where(eq(bookings.id, bookingId))
+        .limit(1);
 
-    if (booking.userId !== userId) {
-      throw new AppError('Not authorized to cancel this booking', 403);
-    }
+      if (!booking) {
+        throw new AppError('Booking not found', 404);
+      }
 
-    if (booking.status === 'cancelled') {
-      throw new AppError('Booking is already cancelled', 400);
-    }
+      if (booking.userId !== userId) {
+        throw new AppError('Not authorized to cancel this booking', 403);
+      }
 
-    const [event] = await db
-      .select()
-      .from(events)
-      .where(eq(events.id, booking.eventId))
-      .limit(1);
+      if (booking.status === 'cancelled') {
+        throw new AppError('Booking is already cancelled', 400);
+      }
 
-    if (event) {
-      await db
-        .update(events)
+      const [event] = await tx
+        .select()
+        .from(events)
+        .where(eq(events.id, booking.eventId))
+        .limit(1);
+
+      if (event) {
+        await tx
+          .update(events)
+          .set({
+            availableTickets: event.availableTickets + booking.numberOfTickets,
+            updatedAt: now,
+          })
+          .where(eq(events.id, event.id));
+      }
+
+      const [cancelled] = await tx
+        .update(bookings)
         .set({
-          availableTickets: event.availableTickets + booking.numberOfTickets,
-          updatedAt: new Date(),
+          status: 'cancelled',
+          updatedAt: now,
         })
-        .where(eq(events.id, event.id));
-    }
+        .where(eq(bookings.id, bookingId))
+        .returning();
 
-    const [updatedBooking] = await db
-      .update(bookings)
-      .set({
-        status: 'cancelled',
-        updatedAt: new Date(),
-      })
-      .where(eq(bookings.id, bookingId))
-      .returning();
+      return cancelled;
+    });
 
     return updatedBooking;
   }

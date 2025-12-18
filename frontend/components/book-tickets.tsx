@@ -27,9 +27,17 @@ function BookTicketsForm({ eventId, maxTickets, price }: Props) {
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null);
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
+
+  const generateIdempotencyKey = () => {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,11 +60,13 @@ function BookTicketsForm({ eventId, maxTickets, price }: Props) {
       let secret = clientSecret;
       let intentId = paymentIntentId;
       if (!secret) {
-        const intentRes = await paymentAPI.createIntent({ eventId, numberOfTickets: count });
+        const key = idempotencyKey || generateIdempotencyKey();
+        const intentRes = await paymentAPI.createIntent({ eventId, numberOfTickets: count, idempotencyKey: key });
         secret = intentRes.data.data.clientSecret;
         intentId = intentRes.data.data.paymentIntentId;
         setClientSecret(secret);
         setPaymentIntentId(intentId);
+        setIdempotencyKey(key);
       }
 
       if (!secret || !intentId) {

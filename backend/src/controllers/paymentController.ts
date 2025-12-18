@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { paymentService } from '../services/paymentService';
 import { AuthRequest } from '../types';
 import { sendSuccess } from '../utils/response';
+import { retryAsync } from '../utils/resilience';
 
 export class PaymentController {
   async createIntent(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -17,8 +18,16 @@ export class PaymentController {
         return;
       }
 
-      const { eventId, numberOfTickets } = req.body;
-      const intent = await paymentService.createPaymentIntent(user.id, eventId, Number(numberOfTickets));
+      const { eventId, numberOfTickets, idempotencyKey } = req.body;
+      const intent = await retryAsync(
+        () => paymentService.createPaymentIntent(
+          user.id,
+          eventId,
+          Number(numberOfTickets),
+          typeof idempotencyKey === 'string' ? idempotencyKey : undefined
+        ),
+        { retries: 2, delayMs: 300 }
+      );
       sendSuccess(res, intent, 'Payment intent created');
     } catch (error) {
       next(error);

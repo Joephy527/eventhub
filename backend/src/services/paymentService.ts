@@ -1,8 +1,9 @@
 import Stripe from 'stripe';
-import { db } from '../db';
+import { db, type DbClient, type DbTransaction } from '../db';
 import { events, payments } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { AppError } from '../middleware/errorHandler';
+import { v4 as uuidv4 } from 'uuid';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecret) {
@@ -14,7 +15,12 @@ export const stripe = stripeSecret
   : null;
 
 export class PaymentService {
-  async createPaymentIntent(userId: string, eventId: string, numberOfTickets: number) {
+  async createPaymentIntent(
+    userId: string,
+    eventId: string,
+    numberOfTickets: number,
+    idempotencyKey?: string
+  ) {
     if (!stripe) throw new AppError('Stripe not configured', 500);
 
     const [event] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
@@ -31,6 +37,7 @@ export class PaymentService {
     }
 
     const amountInCents = Math.round(parseFloat(event.price) * 100 * numberOfTickets);
+    const resolvedKey = idempotencyKey || uuidv4();
 
     const intent = await stripe.paymentIntents.create({
       amount: amountInCents,
@@ -42,6 +49,8 @@ export class PaymentService {
         numberOfTickets: numberOfTickets.toString(),
       },
       payment_method_types: ['card'],
+    }, {
+      idempotencyKey: resolvedKey,
     });
 
     return {
@@ -66,6 +75,7 @@ export class PaymentService {
     amount,
     currency,
     status,
+    dbClient = db,
   }: {
     paymentIntentId: string;
     userId: string;
@@ -75,8 +85,9 @@ export class PaymentService {
     amount: number;
     currency: string;
     status: string;
+    dbClient?: DbClient | DbTransaction;
   }) {
-    const existing = await db
+    const existing = await dbClient
       .select()
       .from(payments)
       .where(and(eq(payments.stripePaymentIntentId, paymentIntentId), eq(payments.userId, userId)));
@@ -85,7 +96,7 @@ export class PaymentService {
       return existing[0];
     }
 
-    const [payment] = await db
+    const [payment] = await dbClient
       .insert(payments)
       .values({
         userId,
