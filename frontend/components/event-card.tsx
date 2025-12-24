@@ -31,36 +31,51 @@ export function EventCard({
   return (
     <Link
       href={`/events/${id}`}
+      data-testid="event-card"
       className={cn(
-        "group block h-full overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition hover:-translate-y-1 hover:shadow-lg",
+        "event-card group block h-full overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl",
         className
       )}
     >
-      <div className="relative h-48 w-full overflow-hidden">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-        />
-        <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-purple-700 shadow-sm">
+      <div className="relative h-52 w-full overflow-hidden">
+        {/* Image with overlay gradient */}
+        <div className="relative h-full w-full">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
+          />
+          {/* Gradient overlay that appears on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        </div>
+
+        {/* Date badge with enhanced styling */}
+        <div className="absolute left-4 top-4 rounded-full bg-gradient-to-r from-blue-600 to-slate-700 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl">
           {formatDateTime(startDate)}
+        </div>
+
+        {/* Price badge in top right */}
+        <div className="absolute right-4 top-4 rounded-full bg-white/95 backdrop-blur-sm px-4 py-2 text-sm font-bold text-blue-700 shadow-lg transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-110">
+          {formatCurrency(Number(price))}
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 text-lg font-semibold text-gray-900">{title}</h3>
-          <span className="shrink-0 rounded-md bg-purple-50 px-2 py-1 text-xs font-semibold text-purple-700">
-            {formatCurrency(Number(price))}
-          </span>
-        </div>
+      <div className="p-5 space-y-4">
+        {/* Title */}
+        <h3 className="line-clamp-2 text-xl font-bold text-gray-900 transition-colors duration-200 group-hover:text-blue-600">
+          {title}
+        </h3>
 
-        <p className="line-clamp-2 text-sm text-gray-600">{description}</p>
+        {/* Description */}
+        <p className="line-clamp-2 text-sm leading-relaxed text-gray-600">
+          {description}
+        </p>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
+        {/* Location */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 transition-colors duration-200 group-hover:bg-blue-100">
             <svg
-              className="h-4 w-4 text-purple-500"
+              className="h-4 w-4 text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -78,23 +93,31 @@ export function EventCard({
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            {location}
-          </span>
-
-          {tags?.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-purple-50 px-2 py-1 text-purple-700"
-            >
-              {tag}
-            </span>
-          ))}
-          {tags && tags.length > 3 && (
-            <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-600">
-              +{tags.length - 3} more
-            </span>
-          )}
+            <span className="font-medium text-gray-700">{location}</span>
+          </div>
         </div>
+
+        {/* Tags */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={tag}
+                className="rounded-full bg-gradient-to-r from-slate-50 to-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-slate-200/50 transition-all duration-200 hover:from-slate-100 hover:to-blue-100 hover:ring-blue-300"
+                style={{
+                  animation: `fade-in-up 0.3s ease-out ${index * 0.05}s both`
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 ring-1 ring-gray-200">
+                +{tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   );

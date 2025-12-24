@@ -147,7 +147,7 @@ function BookTicketsForm({ eventId, maxTickets, price }: Props) {
 
       <div className="flex items-center justify-between text-sm text-gray-700">
         <span>Total</span>
-        <span className="text-lg font-semibold text-purple-700">${(price * count).toFixed(2)}</span>
+        <span className="text-lg font-semibold text-blue-700">${(price * count).toFixed(2)}</span>
       </div>
 
       <div className="space-y-3">
@@ -187,7 +187,7 @@ function BookTicketsForm({ eventId, maxTickets, price }: Props) {
       <button
         type="submit"
         disabled={loading || maxTickets === 0 || !stripe}
-        className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+        className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
       >
         {loading ? "Processing..." : maxTickets === 0 ? "Sold out" : "Pay & book"}
       </button>

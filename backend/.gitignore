@@ -6,3 +6,6 @@ dist/
 coverage/
 .vscode/
 .idea/
+
+# Logs directory
+logs/

@@ -6,7 +6,7 @@ import { AuthRequest } from '../types';
 export class EventController {
   async getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { category, search, minPrice, maxPrice, location, tags, minAvailableTickets } = req.query;
+      const { category, search, minPrice, maxPrice, location, tags, minAvailableTickets, page, pageSize } = req.query;
 
       const filters = {
         category: category as string,
@@ -16,10 +16,19 @@ export class EventController {
         location: location as string,
         tags: tags ? (tags as string).split(',') : undefined,
         minAvailableTickets: minAvailableTickets ? parseInt(minAvailableTickets as string) : undefined,
+        page: page ? parseInt(page as string) : undefined,
+        pageSize: pageSize ? parseInt(pageSize as string) : undefined,
       };
 
-      const events = await eventService.getAllEvents(filters);
-      sendSuccess(res, events, 'Events retrieved successfully');
+      const result = await eventService.getAllEvents(filters);
+
+      // Return paginated response with metadata
+      res.json({
+        success: true,
+        message: 'Events retrieved successfully',
+        data: result.data,
+        pagination: result.pagination,
+      });
     } catch (error) {
       next(error);
     }

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db';
 import { bookings, events, payments } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, count, sum, gt } from 'drizzle-orm';
 import { AppError } from '../middleware/errorHandler';
 import { paymentService } from './paymentService';
 
@@ -54,10 +54,19 @@ export class BookingService {
         throw new AppError('Not enough tickets available', 400);
       }
 
-      const totalAmount = parseFloat(event.price) * numberOfTickets;
-      if (Math.abs(intentAmount - totalAmount) > 0.01) {
-        throw new AppError('Payment amount mismatch', 400);
+      // Use integer math (cents) to avoid floating-point precision issues
+      const priceInCents = Math.round(parseFloat(event.price) * 100);
+      const totalAmountInCents = priceInCents * numberOfTickets;
+      const intentAmountInCents = Math.round(intentAmount * 100);
+
+      if (intentAmountInCents !== totalAmountInCents) {
+        throw new AppError(
+          `Payment amount mismatch: expected $${(totalAmountInCents / 100).toFixed(2)}, got $${(intentAmountInCents / 100).toFixed(2)}`,
+          400
+        );
       }
+
+      const totalAmount = totalAmountInCents / 100;
 
       const [createdBooking] = await tx
         .insert(bookings)
@@ -204,34 +213,45 @@ export class BookingService {
     const now = new Date();
 
     if (role === 'organizer' || role === 'admin') {
-      // Organizer stats
-      const organizerEvents = await db
-        .select()
+      // Organizer stats - optimized with aggregation
+      // Count upcoming events
+      const upcomingEventsResult = await db
+        .select({ value: count() })
         .from(events)
-        .where(eq(events.organizerId, userId));
+        .where(
+          and(
+            eq(events.organizerId, userId),
+            gt(events.startDate, now)
+          )
+        );
 
-      const upcomingEvents = organizerEvents.filter(event => new Date(event.startDate) > now).length;
-
-      const paymentsRows = await db
-        .select()
+      // Get payment stats
+      const paymentsResult = await db
+        .select({
+          totalCount: count(),
+          totalAmount: sum(payments.amount),
+        })
         .from(payments)
-        .where(and(eq(payments.organizerId, userId), eq(payments.status, 'succeeded')));
+        .where(
+          and(
+            eq(payments.organizerId, userId),
+            eq(payments.status, 'succeeded')
+          )
+        );
 
-      const totalEarned = paymentsRows.reduce(
-        (sum, payment) => sum + parseFloat(payment.amount),
-        0
-      );
+      const paymentsStats = paymentsResult[0];
 
       return {
-        totalBookings: paymentsRows.length,
-        upcomingEvents,
+        totalBookings: paymentsStats?.totalCount || 0,
+        upcomingEvents: upcomingEventsResult[0]?.value || 0,
         totalSpent: 0,
-        totalEarned,
+        totalEarned: parseFloat(String(paymentsStats?.totalAmount || 0)),
       };
     }
 
-    const userBookings = await db
-      .select()
+    // User stats - optimized with single JOIN query to avoid N+1
+    const bookingCountResult = await db
+      .select({ value: count() })
       .from(bookings)
       .where(
         and(
@@ -240,34 +260,36 @@ export class BookingService {
         )
       );
 
-    let upcomingEvents = 0;
+    // Count upcoming events for user (using JOIN to avoid N+1)
+    const upcomingResult = await db
+      .select({ value: count() })
+      .from(bookings)
+      .innerJoin(events, eq(bookings.eventId, events.id))
+      .where(
+        and(
+          eq(bookings.userId, userId),
+          eq(bookings.status, 'confirmed'),
+          gt(events.startDate, now)
+        )
+      );
 
-    for (const booking of userBookings) {
-      const [event] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, booking.eventId))
-        .limit(1);
-
-      if (event && new Date(event.startDate) > now) {
-        upcomingEvents++;
-      }
-    }
-
-    const paymentRows = await db
-      .select()
+    // Get total spent
+    const paymentsResult = await db
+      .select({
+        totalAmount: sum(payments.amount),
+      })
       .from(payments)
-      .where(and(eq(payments.userId, userId), eq(payments.status, 'succeeded')));
-
-    const totalSpent = paymentRows.reduce(
-      (sum, payment) => sum + parseFloat(payment.amount),
-      0
-    );
+      .where(
+        and(
+          eq(payments.userId, userId),
+          eq(payments.status, 'succeeded')
+        )
+      );
 
     return {
-      totalBookings: userBookings.length,
-      upcomingEvents,
-      totalSpent,
+      totalBookings: bookingCountResult[0]?.value || 0,
+      upcomingEvents: upcomingResult[0]?.value || 0,
+      totalSpent: parseFloat(String(paymentsResult[0]?.totalAmount || 0)),
       totalEarned: 0,
     };
   }

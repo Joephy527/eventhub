@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState, useRef } from "react";
 import { eventAPI } from "@/lib/api";
 import { EventCard } from "./event-card";
+import { Pagination, PaginationInfo } from "./ui/pagination";
+import { Event, PaginationMetadata } from "@/types";
 
-type Event = any;
 type Category = { id: string; name: string; slug: string };
 
 type Filters = {
@@ -26,15 +27,31 @@ const emptyFilters: Filters = {
 export function EventsBrowser({
   initialEvents,
   categories,
+  initialCategory,
 }: {
   initialEvents: Event[];
   categories: Category[];
+  initialCategory?: string;
 }) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [filters, setFilters] = useState<Filters>({
+    ...emptyFilters,
+    category: initialCategory || "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationMetadata>({
+    page: 1,
+    pageSize: 12,
+    totalCount: initialEvents.length,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+  });
+
+  // Ref for scrolling to results
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const filtersActive = useMemo(
     () => Object.values(filters).some((value) => value !== ""),
@@ -45,8 +62,15 @@ export function EventsBrowser({
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const buildParams = (activeFilters: Filters, activeSearch: string) => {
-    const params: Record<string, string | number> = {};
+  const buildParams = (
+    activeFilters: Filters,
+    activeSearch: string,
+    page: number = 1
+  ) => {
+    const params: Record<string, string | number> = {
+      page,
+      pageSize: pagination.pageSize,
+    };
     if (activeSearch.trim()) params.search = activeSearch.trim();
     if (activeFilters.category) params.category = activeFilters.category;
     if (activeFilters.location.trim()) params.location = activeFilters.location.trim();
@@ -60,19 +84,34 @@ export function EventsBrowser({
 
   const fetchEvents = async (
     activeFilters: Filters = filters,
-    activeSearch: string = search
+    activeSearch: string = search,
+    page: number = 1
   ) => {
     setLoading(true);
     setError(null);
     try {
-      const params = buildParams(activeFilters, activeSearch);
-      const res = await eventAPI.getAll(Object.keys(params).length ? params : undefined);
-      setEvents(res.data.data ?? []);
+      const params = buildParams(activeFilters, activeSearch, page);
+      const res = await eventAPI.getAll(params);
+
+      // Handle paginated response
+      if (res.data.data && res.data.pagination) {
+        setEvents(res.data.data);
+        setPagination(res.data.pagination);
+      } else {
+        // Fallback for non-paginated response
+        setEvents(res.data.data ?? []);
+      }
     } catch (err: any) {
       setError(err?.response?.data?.error || "Failed to load events");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    fetchEvents(filters, search, newPage);
+    // Scroll to results section
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const resetFilters = async () => {
@@ -124,7 +163,7 @@ export function EventsBrowser({
                   type="button"
                   onClick={handleSearch}
                   disabled={loading}
-                  className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
                 >
                   {loading ? "Searching..." : "Search"}
                 </button>
@@ -228,7 +267,7 @@ export function EventsBrowser({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
                 >
                   {loading ? "Searching..." : "Apply filters"}
                 </button>
@@ -244,9 +283,10 @@ export function EventsBrowser({
         )}
       </div>
 
-      {events.length === 0 ? (
-        <div className="rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-gray-200">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+      <div ref={resultsRef}>
+        {events.length === 0 ? (
+          <div className="rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-gray-200">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-blue-600">
             <svg
               className="h-6 w-6"
               fill="none"
@@ -269,22 +309,50 @@ export function EventsBrowser({
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event: Event) => (
-            <EventCard
-              key={event.id}
-              id={event.id}
-              title={event.title}
-              description={event.description}
-              imageUrl={event.imageUrl}
-              location={event.location}
-              startDate={event.startDate}
-              price={event.price}
-              tags={event.tags}
+        <div className="space-y-6">
+          {/* Pagination Info */}
+          {pagination.totalCount > 0 && (
+            <div className="flex justify-between items-center">
+              <PaginationInfo
+                currentPage={pagination.page}
+                pageSize={pagination.pageSize}
+                totalCount={pagination.totalCount}
+              />
+              <p className="text-sm text-gray-600">
+                {pagination.totalPages} {pagination.totalPages === 1 ? 'page' : 'pages'}
+              </p>
+            </div>
+          )}
+
+          {/* Events Grid */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event: Event) => (
+              <EventCard
+                key={event.id}
+                id={event.id}
+                title={event.title}
+                description={event.description}
+                imageUrl={event.imageUrl}
+                location={event.location}
+                startDate={event.startDate}
+                price={event.price}
+                tags={event.tags}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              className="mt-8"
             />
-          ))}
-        </div>
-      )}
+          )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -125,7 +125,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.title}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -138,7 +138,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.category}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           >
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -158,7 +158,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             onChange={handleChange}
             required
             rows={4}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -172,7 +172,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.imageUrl}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -185,7 +185,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.location}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -198,7 +198,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.venue}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -212,7 +212,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.startDate}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -226,7 +226,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.endDate}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -242,7 +242,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.price}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2">
@@ -257,7 +257,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.totalTickets}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="space-y-2 md:col-span-2">
@@ -270,7 +270,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             value={form.tags}
             onChange={handleChange}
             placeholder="music, conference, networking"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-100"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export function EventForm({ categories, initialEvent }: Props) {
             type="checkbox"
             checked={form.isPublished}
             onChange={handleChange}
-            className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
             Publish immediately
@@ -299,7 +299,7 @@ export function EventForm({ categories, initialEvent }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           {loading ? "Saving..." : initialEvent ? "Update event" : "Create event"}
         </button>

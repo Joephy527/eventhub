@@ -63,6 +63,8 @@ export interface TokenPayload {
   id: string;
   email: string;
   role: string;
+  iat?: number;
+  exp?: number;
 }
 
 export interface ApiResponse<T = any> {
@@ -88,9 +90,25 @@ export interface EventFilters {
   location?: string;
   tags?: string[];
   minAvailableTickets?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface OrganizerEventFilters {
   search?: string;
   status?: 'published' | 'draft';
+}
+
+export interface PaginationMetadata {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
 }

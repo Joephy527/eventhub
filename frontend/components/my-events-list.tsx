@@ -87,7 +87,7 @@ export function MyEventsList({ initialEvents }: { initialEvents: Event[] }) {
               type="button"
               onClick={() => fetchFilteredEvents()}
               disabled={loading}
-              className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-purple-300"
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
             >
               {loading ? "Searching..." : "Search"}
             </button>
@@ -167,7 +167,7 @@ export function MyEventsList({ initialEvents }: { initialEvents: Event[] }) {
             <div className="mt-6">
               <Link
                 href="/events/create"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 <svg
                   className="-ml-1 mr-2 h-5 w-5"

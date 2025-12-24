@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, timestamp, integer, decimal, boolean, pgEnum, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, timestamp, integer, decimal, boolean, pgEnum, uuid, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -45,7 +45,14 @@ export const events = pgTable('events', {
   tags: text('tags').array(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  organizerIdx: index('events_organizer_id_idx').on(table.organizerId),
+  categoryIdx: index('events_category_idx').on(table.category),
+  startDateIdx: index('events_start_date_idx').on(table.startDate),
+  isPublishedIdx: index('events_is_published_idx').on(table.isPublished),
+  // Composite index for common query pattern (published events ordered by date)
+  publishedStartDateIdx: index('events_published_start_date_idx').on(table.isPublished, table.startDate),
+}));
 
 // Bookings Table
 export const bookings = pgTable('bookings', {
@@ -58,7 +65,13 @@ export const bookings = pgTable('bookings', {
   bookingDate: timestamp('booking_date').notNull().defaultNow(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  userIdx: index('bookings_user_id_idx').on(table.userId),
+  eventIdx: index('bookings_event_id_idx').on(table.eventId),
+  statusIdx: index('bookings_status_idx').on(table.status),
+  // Composite index for user's confirmed bookings query
+  userStatusIdx: index('bookings_user_status_idx').on(table.userId, table.status),
+}));
 
 // Payments Table
 export const payments = pgTable('payments', {
@@ -73,7 +86,15 @@ export const payments = pgTable('payments', {
   status: varchar('status', { length: 50 }).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  userIdx: index('payments_user_id_idx').on(table.userId),
+  organizerIdx: index('payments_organizer_id_idx').on(table.organizerId),
+  statusIdx: index('payments_status_idx').on(table.status),
+  stripeIntentIdx: index('payments_stripe_intent_idx').on(table.stripePaymentIntentId),
+  // Composite indexes for common query patterns
+  userStatusIdx: index('payments_user_status_idx').on(table.userId, table.status),
+  organizerStatusIdx: index('payments_organizer_status_idx').on(table.organizerId, table.status),
+}));
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

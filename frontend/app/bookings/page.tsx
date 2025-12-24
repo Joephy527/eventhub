@@ -1,11 +1,11 @@
 import { auth } from "@/auth";
 import Link from "next/link";
-import { bookingAPI, eventAPI } from "@/lib/api";
+import { serverBookingAPI, serverEventAPI } from "@/lib/api-server";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 async function getBookings() {
   try {
-    const res = await bookingAPI.getMyBookings();
+    const res = await serverBookingAPI.getMyBookings();
     const bookings = res.data.data ?? [];
 
     // Fetch related events to enrich booking cards
@@ -14,7 +14,7 @@ async function getBookings() {
       bookings.map(async (booking: any) => {
         if (!eventCache[booking.eventId]) {
           try {
-            const eventRes = await eventAPI.getById(booking.eventId);
+            const eventRes = await serverEventAPI.getById(booking.eventId);
             eventCache[booking.eventId] = eventRes.data.data;
           } catch (error) {
             console.error("Failed to load event for booking:", error);
@@ -40,7 +40,7 @@ export default async function BookingsPage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-2xl font-bold text-purple-600">
+            <Link href="/" className="text-2xl font-bold text-blue-600">
               EventHub
             </Link>
             <div className="flex items-center space-x-4">
@@ -49,10 +49,10 @@ export default async function BookingsPage() {
               </Link>
               {session?.user.role && (session.user.role === "organizer" || session.user.role === "admin") && (
                 <>
-                  <Link href="/events/my-events" className="text-purple-600 hover:text-purple-700">
+                  <Link href="/events/my-events" className="text-blue-600 hover:text-blue-700">
                     My Events
                   </Link>
-                  <Link href="/events/create" className="text-purple-600 hover:text-purple-700">
+                  <Link href="/events/create" className="text-blue-600 hover:text-blue-700">
                     Create
                   </Link>
                 </>
@@ -73,7 +73,7 @@ export default async function BookingsPage() {
           </div>
           <Link
             href="/events"
-            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
           >
             Browse Events
           </Link>
@@ -101,7 +101,7 @@ export default async function BookingsPage() {
             <div className="mt-6">
               <Link
                 href="/events"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 Browse Events
               </Link>
@@ -116,7 +116,7 @@ export default async function BookingsPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
                       Booking
                     </p>
                     <h3 className="text-xl font-semibold text-gray-900">
@@ -152,7 +152,7 @@ export default async function BookingsPage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={`/events/${booking.eventId}`}
-                    className="inline-flex items-center rounded-lg bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100"
+                    className="inline-flex items-center rounded-lg bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
                   >
                     View Event
                   </Link>

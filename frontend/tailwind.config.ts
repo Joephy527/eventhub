@@ -67,10 +67,147 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "bounce-slow": {
+          "0%, 100%": {
+            transform: "translateY(-5%)",
+            animationTimingFunction: "cubic-bezier(0.8, 0, 1, 1)",
+          },
+          "50%": {
+            transform: "translateY(0)",
+            animationTimingFunction: "cubic-bezier(0, 0, 0.2, 1)",
+          },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "fade-in-up": {
+          from: {
+            opacity: "0",
+            transform: "translateY(20px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "fade-in-down": {
+          from: {
+            opacity: "0",
+            transform: "translateY(-20px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "slide-in-left": {
+          from: {
+            opacity: "0",
+            transform: "translateX(-100%)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateX(0)",
+          },
+        },
+        "slide-in-right": {
+          from: {
+            opacity: "0",
+            transform: "translateX(100%)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateX(0)",
+          },
+        },
+        "scale-in": {
+          from: {
+            opacity: "0",
+            transform: "scale(0.9)",
+          },
+          to: {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
+        shimmer: {
+          "0%": {
+            backgroundPosition: "-1000px 0",
+          },
+          "100%": {
+            backgroundPosition: "1000px 0",
+          },
+        },
+        gradient: {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+        },
+        "pulse-slow": {
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: "0.5",
+          },
+        },
+        wiggle: {
+          "0%, 100%": {
+            transform: "rotate(-3deg)",
+          },
+          "50%": {
+            transform: "rotate(3deg)",
+          },
+        },
+        shake: {
+          "0%, 100%": {
+            transform: "translateX(0)",
+          },
+          "10%, 30%, 50%, 70%, 90%": {
+            transform: "translateX(-4px)",
+          },
+          "20%, 40%, 60%, 80%": {
+            transform: "translateX(4px)",
+          },
+        },
+        float: {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
+        glow: {
+          "0%, 100%": {
+            boxShadow: "0 0 5px rgba(147, 51, 234, 0.5)",
+          },
+          "50%": {
+            boxShadow: "0 0 20px rgba(147, 51, 234, 0.8), 0 0 30px rgba(99, 102, 241, 0.6)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "bounce-slow": "bounce-slow 3s infinite",
+        "fade-in": "fade-in 1s ease-out",
+        "fade-in-up": "fade-in-up 0.6s ease-out",
+        "fade-in-down": "fade-in-down 0.6s ease-out",
+        "slide-in-left": "slide-in-left 0.5s ease-out",
+        "slide-in-right": "slide-in-right 0.5s ease-out",
+        "scale-in": "scale-in 0.5s ease-out",
+        shimmer: "shimmer 2s infinite",
+        gradient: "gradient 3s ease infinite",
+        "pulse-slow": "pulse-slow 3s ease-in-out infinite",
+        wiggle: "wiggle 1s ease-in-out infinite",
+        shake: "shake 0.5s ease-in-out",
+        float: "float 3s ease-in-out infinite",
+        glow: "glow 2s ease-in-out infinite",
       },
     },
   },

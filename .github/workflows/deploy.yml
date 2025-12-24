@@ -1,0 +1,125 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+
+jobs:
+  # Build and Push Docker Images
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for backend
+        id: backend-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.backend-meta.outputs.tags }}
+          labels: ${{ steps.backend-meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata for frontend
+        id: frontend-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.frontend-meta.outputs.tags }}
+          labels: ${{ steps.frontend-meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to Production (Example - adjust for your hosting)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://eventhub.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Example: Deploy to Docker Swarm
+      - name: Deploy to Docker Swarm
+        run: |
+          echo "Add your deployment script here"
+          # ssh user@production-server 'docker stack deploy -c docker-compose.prod.yml eventhub'
+
+      # Example: Deploy to Kubernetes
+      # - name: Deploy to Kubernetes
+      #   uses: azure/k8s-deploy@v4
+      #   with:
+      #     manifests: |
+      #       k8s/deployment.yml
+      #       k8s/service.yml
+      #     images: |
+      #       ${{ env.REGISTRY }}/${{ github.repository }}/backend:${{ github.sha }}
+      #       ${{ env.REGISTRY }}/${{ github.repository }}/frontend:${{ github.sha }}
+
+      # Example: Deploy to AWS ECS
+      # - name: Deploy to AWS ECS
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     task-definition: task-definition.json
+      #     service: eventhub-service
+      #     cluster: eventhub-cluster
+
+      - name: Notify deployment
+        run: |
+          echo "Deployment completed successfully"
+          # Add notification (Slack, Discord, email, etc.)

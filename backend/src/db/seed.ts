@@ -1,17 +1,24 @@
 import { db } from './index';
-import { categories, users, events } from './schema';
+import { categories, users, events, bookings, payments } from './schema';
 import { hashPassword } from '../utils/password';
 
 async function seed() {
   console.log('Seeding database...');
 
   try {
-    // Check if categories already exist
-    const existingCategories = await db.select().from(categories).limit(1);
-    if (existingCategories.length > 0) {
-      console.log('✓ Database already seeded');
-      process.exit(0);
-    }
+    // Delete all existing data in correct order (respecting foreign keys)
+    console.log('Deleting existing data...');
+    await db.delete(payments);
+    console.log('✓ Payments deleted');
+    await db.delete(bookings);
+    console.log('✓ Bookings deleted');
+    await db.delete(events);
+    console.log('✓ Events deleted');
+    await db.delete(users);
+    console.log('✓ Users deleted');
+    await db.delete(categories);
+    console.log('✓ Categories deleted');
+    console.log('All existing data cleared\n');
 
     // Seed categories
     const categoryData = [
@@ -86,8 +93,15 @@ async function seed() {
         lastName: 'Organizer',
         role: 'organizer',
       },
+      {
+        email: 'admin@demo.com',
+        password,
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+      },
     ]).returning();
-    console.log('✓ Demo users seeded');
+    console.log('✓ Demo users seeded (user@demo.com, organizer@demo.com, admin@demo.com - password: password123)');
 
     const demoOrganizer = insertedUsers[1];
 

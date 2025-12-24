@@ -10,7 +10,7 @@ export default async function ProfilePage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-2xl font-bold text-purple-600">
+            <Link href="/" className="text-2xl font-bold text-blue-600">
               EventHub
             </Link>
             <div className="flex items-center space-x-4">
@@ -24,10 +24,10 @@ export default async function ProfilePage() {
               )}
               {session?.user.role && (session.user.role === 'organizer' || session.user.role === 'admin') && (
                 <>
-                  <Link href="/events/my-events" className="text-purple-600 hover:text-purple-700">
+                  <Link href="/events/my-events" className="text-blue-600 hover:text-blue-700">
                     My Events
                   </Link>
-                  <Link href="/events/create" className="text-purple-600 hover:text-purple-700">
+                  <Link href="/events/create" className="text-blue-600 hover:text-blue-700">
                     Create
                   </Link>
                 </>
@@ -49,9 +49,9 @@ export default async function ProfilePage() {
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-8">
+          <div className="bg-gradient-to-r from-blue-600 to-slate-700 px-6 py-8">
             <div className="flex items-center">
-              <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold text-purple-600">
+              <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold text-blue-600">
                 {session?.user.firstName?.[0]}
                 {session?.user.lastName?.[0]}
               </div>
@@ -59,7 +59,7 @@ export default async function ProfilePage() {
                 <h2 className="text-2xl font-bold text-white">
                   {session?.user.firstName} {session?.user.lastName}
                 </h2>
-                <p className="text-purple-100">{session?.user.email}</p>
+                <p className="text-blue-100">{session?.user.email}</p>
               </div>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default async function ProfilePage() {
                 <div className="border-b pb-4">
                   <dt className="text-sm font-medium text-gray-500">Account Type</dt>
                   <dd className="mt-1">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 capitalize">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800 capitalize">
                       {session?.user.role}
                     </span>
                   </dd>

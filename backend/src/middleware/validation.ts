@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult, ValidationChain } from 'express-validator';
-import { sendError } from '../utils/response';
 
 export const validate = (validations: ValidationChain[]) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -17,8 +16,7 @@ export const validate = (validations: ValidationChain[]) => {
       message: err.msg,
     }));
 
-    sendError(res, 'Validation failed', 400);
-    res.json({
+    res.status(400).json({
       success: false,
       error: 'Validation failed',
       details: extractedErrors,

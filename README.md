@@ -2,6 +2,10 @@
 
 A modern, full-stack event management platform built with Next.js and Express.js. Features event creation, ticket booking, user authentication, and analytics dashboards.
 
+## 🔗 Live URL
+
+http://eventhub-red.vercel.app/
+
 ## 🚀 Tech Stack
 
 ### Frontend
@@ -10,7 +14,7 @@ A modern, full-stack event management platform built with Next.js and Express.js
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
 - **Axios** - HTTP client
-- **Lucide React** - Beautiful icons
+- **Lucide React** - Icons
 
 ### Backend
 
@@ -47,42 +51,13 @@ EventHub/
 
 ## 🎯 Features
 
-### Core Functionality
+- User authentication and role-based access
+- Event creation, management, and browsing
+- Ticket booking with Stripe payments
+- Categories, search, and filters
+- Analytics dashboard for organizers
 
-- **User Authentication** - Register, login, JWT-based auth
-- **Event Management** - Create, read, update, delete events
-- **Ticket Booking** - Book tickets with stripe payment, view bookings, cancel bookings
-- **Categories** - Organize events by category
-- **Search & Filters** - Find events by keyword, category, price, location
-- **Analytics** - Dashboard with booking statistics
-
-### User Roles
-
-- **User** - Browse events, book tickets, manage bookings
-- **Organizer** - Create events, manage tickets, view analytics
-- **Admin** - Full platform access
-
-## 🏗️ Architecture
-
-### Backend Architecture
-
-```
-Clean Separation of Concerns:
-├── Routes → Controllers → Services → Database
-├── Middleware for cross-cutting concerns
-├── Validation layer for request data
-└── Centralized error handling
-```
-
-### Database Schema
-
-- **Users** - User accounts with role-based access
-- **Events** - Event details, pricing, availability
-- **Bookings** - Ticket purchases and reservations
-- **Categories** - Event categorization
-- **Payments** - Payment records for booking tickets
-
-## 🛠️ Setup Instructions
+## 🛠️ Local Setup
 
 ### Prerequisites
 
@@ -173,45 +148,32 @@ npm run dev
 
 The application will run on `http://localhost:3000`
 
-## 📡 API Endpoints
+## 🧰 Scripts Reference
 
-### Authentication
+### Backend
 
-```
-POST   /api/auth/register    - Register new user
-POST   /api/auth/login        - Login user
-GET    /api/auth/profile      - Get user profile (protected)
-```
-
-### Events
-
-```
-GET    /api/events                   - Get all events
-GET    /api/events/featured          - Get featured events
-GET    /api/events/upcoming          - Get upcoming events
-GET    /api/events/:id               - Get event by ID
-GET    /api/events/my-events         - Get organizer's events (protected)
-POST   /api/events                   - Create event (organizer only)
-PUT    /api/events/:id               - Update event (organizer only)
-DELETE /api/events/:id               - Delete event (organizer only)
+```bash
+npm run dev          # Development with hot reload
+npm run build        # Compile TypeScript
+npm start            # Production server
+npm test             # Run tests
+npm run lint         # ESLint check
+npm run format       # Prettier format
+npm run db:migrate   # Run migrations
+npm run db:seed      # Seed database
+npm run db:setup     # Migrate + seed
 ```
 
-### Bookings
+### Frontend
 
-```
-POST   /api/bookings                 - Create booking (protected)
-GET    /api/bookings/my-bookings     - Get user bookings (protected)
-GET    /api/bookings/stats           - Get booking statistics (protected)
-GET    /api/bookings/:id             - Get booking by ID (protected)
-PATCH  /api/bookings/:id/cancel      - Cancel booking (protected)
-```
-
-### Categories
-
-```
-GET    /api/categories               - Get all categories
-GET    /api/categories/:id           - Get category by ID
-GET    /api/categories/slug/:slug    - Get category by slug
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm start            # Production server
+npm test             # Run tests
+npm run lint         # Next.js lint
 ```
 
----
+## 📚 Documentation
+
+- Environment variables: `backend/.env.example`, `frontend/.env.example`

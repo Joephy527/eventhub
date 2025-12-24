@@ -1,61 +1,75 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db';
 import { events } from '../db/schema';
-import { eq, and, gte, lte, ilike, or, desc, asc } from 'drizzle-orm';
-import { EventFilters, OrganizerEventFilters } from '../types';
+import { eq, and, gte, lte, ilike, or, desc, asc, count } from 'drizzle-orm';
+import { EventFilters, OrganizerEventFilters, PaginatedResponse } from '../types';
 import { AppError } from '../middleware/errorHandler';
 
 export class EventService {
-  async getAllEvents(filters?: EventFilters) {
+  async getAllEvents(filters?: EventFilters): Promise<PaginatedResponse<any>> {
+    const page = filters?.page || 1;
+    const pageSize = Math.min(filters?.pageSize || 20, 100); // Max 100 per page
+    const offset = (page - 1) * pageSize;
 
-    if (filters) {
-      const conditions = [eq(events.isPublished, true)];
+    const conditions = [eq(events.isPublished, true)];
 
-      if (filters.category) {
-        conditions.push(eq(events.category, filters.category));
-      }
-
-      if (filters.search) {
-        conditions.push(
-          or(
-            ilike(events.title, `%${filters.search}%`),
-            ilike(events.description, `%${filters.search}%`)
-          )!
-        );
-      }
-
-      if (filters.minPrice !== undefined) {
-        conditions.push(gte(events.price, filters.minPrice.toString()));
-      }
-
-      if (filters.maxPrice !== undefined) {
-        conditions.push(lte(events.price, filters.maxPrice.toString()));
-      }
-
-      if (filters.minAvailableTickets !== undefined) {
-        conditions.push(gte(events.availableTickets, filters.minAvailableTickets));
-      }
-
-      if (filters.location) {
-        conditions.push(ilike(events.location, `%${filters.location}%`));
-      }
-
-      const result = await db
-        .select()
-        .from(events)
-        .where(and(...conditions))
-        .orderBy(asc(events.startDate));
-
-      return result;
+    if (filters?.category) {
+      conditions.push(eq(events.category, filters.category));
     }
 
+    if (filters?.search) {
+      conditions.push(
+        or(
+          ilike(events.title, `%${filters.search}%`),
+          ilike(events.description, `%${filters.search}%`)
+        )!
+      );
+    }
+
+    if (filters?.minPrice !== undefined) {
+      conditions.push(gte(events.price, filters.minPrice.toString()));
+    }
+
+    if (filters?.maxPrice !== undefined) {
+      conditions.push(lte(events.price, filters.maxPrice.toString()));
+    }
+
+    if (filters?.minAvailableTickets !== undefined) {
+      conditions.push(gte(events.availableTickets, filters.minAvailableTickets));
+    }
+
+    if (filters?.location) {
+      conditions.push(ilike(events.location, `%${filters.location}%`));
+    }
+
+    // Get total count for pagination
+    const [{ value: totalCount }] = await db
+      .select({ value: count() })
+      .from(events)
+      .where(and(...conditions));
+
+    // Get paginated results
     const result = await db
       .select()
       .from(events)
-      .where(eq(events.isPublished, true))
-      .orderBy(asc(events.startDate));
+      .where(and(...conditions))
+      .orderBy(asc(events.startDate))
+      .limit(pageSize)
+      .offset(offset);
 
-    return result;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      data: result,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   }
 
   async getEventById(eventId: string) {

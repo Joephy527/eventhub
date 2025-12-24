@@ -1,11 +1,11 @@
-import { categoryAPI, eventAPI } from "@/lib/api";
+import { serverCategoryAPI, serverEventAPI } from "@/lib/api-server";
 import { EventForm } from "@/components/event-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 async function getCategories() {
   try {
-    const res = await categoryAPI.getAll();
+    const res = await serverCategoryAPI.getAll();
     return res.data.data ?? [];
   } catch (error) {
     console.error("Failed to load categories:", error);
@@ -15,7 +15,7 @@ async function getCategories() {
 
 async function getEvent(id: string) {
   try {
-    const res = await eventAPI.getById(id);
+    const res = await serverEventAPI.getById(id);
     return res.data.data;
   } catch (error) {
     console.error("Failed to load event:", error);
@@ -35,7 +35,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-2xl font-bold text-purple-600">
+          <Link href="/" className="text-2xl font-bold text-blue-600">
             EventHub
           </Link>
           <div className="flex items-center gap-3 text-sm font-medium text-gray-600">
@@ -51,7 +51,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-wide text-purple-600">
+          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
             Edit Event
           </p>
           <h1 className="mt-1 text-3xl font-bold text-gray-900">Update event details</h1>

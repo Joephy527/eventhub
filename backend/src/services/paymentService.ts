@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecret) {
-  console.warn('⚠️ STRIPE_SECRET_KEY is not set. Payment endpoints will fail.');
+  console.warn('⚠️ STRIPE_SECRET_KEY is not set. Payment features will be disabled.');
 }
 
 export const stripe = stripeSecret
@@ -21,7 +21,12 @@ export class PaymentService {
     numberOfTickets: number,
     idempotencyKey?: string
   ) {
-    if (!stripe) throw new AppError('Stripe not configured', 500);
+    if (!stripe) {
+      throw new AppError(
+        'Payment processing is temporarily unavailable. Please try again later or contact support.',
+        503
+      );
+    }
 
     const [event] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
     if (!event) {
@@ -62,7 +67,12 @@ export class PaymentService {
   }
 
   async getPaymentIntent(paymentIntentId: string) {
-    if (!stripe) throw new AppError('Stripe not configured', 500);
+    if (!stripe) {
+      throw new AppError(
+        'Payment processing is temporarily unavailable. Please try again later or contact support.',
+        503
+      );
+    }
     return await stripe.paymentIntents.retrieve(paymentIntentId);
   }
 
